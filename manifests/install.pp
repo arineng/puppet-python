@@ -45,18 +45,18 @@ class python::install {
     default => $python::virtualenv,
   }
 
-  package { 'python':
-    ensure => $python::ensure,
-    name   => $python,
-  }
-
-  package { 'virtualenv':
-    ensure  => $venv_ensure,
-    require => Package['python'],
-  }
-
   case $python::provider {
     pip: {
+
+      package { 'virtualenv':
+        ensure  => $venv_ensure,
+        require => Package['python'],
+      }
+
+      package { 'python':
+        ensure => $python::ensure,
+        name   => $python,
+      }
 
       package { 'pip':
         ensure  => $pip_ensure,
@@ -111,16 +111,22 @@ class python::install {
         ensure => 'latest',
         before => Package['python'],
       }
+      
+      package { 'python':
+        ensure => $python::ensure,
+        name   => $python::version,
+      }
 
       # This gets installed as a dependency anyway
       # package { "${python::version}-python-virtualenv":
       #   ensure  => $venv_ensure,
       #   require => Package['scl-utils'],
       # }
-      package { "${python}-scldevel":
+      package { "${python::version}-scldevel":
         ensure  => $dev_ensure,
         require => Package['scl-utils'],
       }
+
       if $pip_ensure != 'absent' {
         exec { 'python-scl-pip-install':
           command => "${python::exec_prefix}easy_install pip",
@@ -139,11 +145,16 @@ class python::install {
         tag      => 'python-scl-repo',
       }
 
+      package { 'python':
+        ensure => $python::ensure,
+        name   => $python::version,
+      }
+      
       Package <| title == 'python' |> {
         tag => 'python-scl-package',
       }
 
-      package { "${python}-scldevel":
+      package { "${python::version}-scldevel":
         ensure => $dev_ensure,
         tag    => 'python-scl-package',
       }
@@ -162,6 +173,16 @@ class python::install {
     }
 
     default: {
+
+      package { 'virtualenv':
+        ensure  => $venv_ensure,
+        require => Package['python'],
+      }
+
+      package { 'python':
+        ensure => $python::ensure,
+        name   => $python,
+      }
 
       package { 'pip':
         ensure  => $pip_ensure,
